@@ -1,0 +1,156 @@
+---
+title: "Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+---
+title: "Run and Test Functions"
+format: html
+---
+
+```{r}
+devtools::document()
+```
+
+
+## Test SNP simulation
+
+```{r}
+J <- 3
+K <- 10
+N <- 300
+M <- 600
+cocktail <- snp_simulation(J = J, K = K, N = N, M = M, seed = 1)
+
+# Some checks
+class(cocktail)
+names(cocktail)
+str(cocktail$data)
+str(cocktail$params)
+str(cocktail$seed)
+```
+
+## Test Add Trait
+
+```{r}
+cocktail <- add_trait(cocktail, beta0 = 10)
+
+# Some checks
+str(cocktail$covariance)
+str(cocktail$summary)
+str(cocktail$component)
+str(cocktail$params)
+str(cocktail$data)
+
+# Check scale
+cocktail <- add_trait(cocktail, beta0 = 10, scale = TRUE)
+cocktail$summary$sample_var_composition
+
+# Check V_Noise
+R <- matrix(0.5, nrow = N, ncol = N)
+diag(R) <- 1
+cocktail <- add_trait(cocktail, beta0 = 10, R = R)
+try(
+  cocktail <- add_trait(cocktail, beta0 = 10, R = "bad_specification"), 
+)
+try(
+  cocktail <- add_trait(cocktail, beta0 = 10, R = matrix(0)), 
+)
+try(
+  cocktail <- add_trait(cocktail, beta0 = 10, R = data.frame()), 
+)
+```
+
+## Test Add Additive
+
+```{r}
+cocktail <- add_additive(cocktail, r = 1)
+cocktail$summary$sample_var_composition
+
+# Some checks
+str(cocktail$summary)
+str(cocktail$params)
+str(cocktail$component)
+str(cocktail$effects)
+
+# Check coverage
+cocktail <- add_additive(cocktail, r = 2)
+cocktail$summary$sample_var_composition
+
+# Check scale
+cocktail <- add_additive(cocktail, r = 1, scale = TRUE)
+cocktail$summary$sample_var_composition
+```
+
+## Test Add Polygenic
+
+```{r}
+# Check genotype standardization
+str(feature_map$vanraden()(cocktail))
+
+# Add effects
+cocktail <- add_polygenic(cocktail, r = 1)
+cocktail$summary$sample_var_composition
+
+# Some checks
+str(cocktail$summary)
+str(cocktail$params)
+str(cocktail$component)
+str(cocktail$effects)
+
+# Check coverage
+cocktail <- add_polygenic(cocktail, r = 2)
+cocktail$summary$sample_var_composition
+
+# Check scale
+cocktail <- add_polygenic(cocktail, r = 1, scale = TRUE)
+cocktail$summary$sample_var_composition
+```
+
+## Test ESS
+
+```{r}
+# Per-marker ESS (reliability ratio)
+ess(cocktail, m = 1:10) 
+
+# Contrast-specific ESS
+ess(cocktail, x = rep(1,M))
+
+# Check subset
+ess(cocktail, m = 1:10, S = 1:10)
+```
+
+## Test Generics
+
+```{r}
+cocktail
+str(dimnames(cocktail))
+dim(cocktail)
+str(genotype(cocktail))
+str(metadata(cocktail))
+```
+
+## The Pipeline
+
+```{r}
+devtools::document()
+J <- 3
+K <- 10
+N <- 300
+M <- 600
+cocktail <- snp_simulation(J = J, K = 10, N = N, M = M, seed = 1) %>%
+            add_trait(beta0 = 10) %>%
+            add_additive(r = 1) %>%
+            add_polygenic(r = 1)  
+cocktail
+```
+
+## To do
+
+```{r}
+# update function
+```
