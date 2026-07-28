@@ -51,9 +51,7 @@ cocktail <- add_trait(cocktail, beta0 = 10, scale = TRUE)
 cocktail$summary$sample_var_composition
 
 # Check V_Noise
-R <- matrix(0.5, nrow = N, ncol = N)
-diag(R) <- 1
-cocktail <- add_trait(cocktail, beta0 = 10, R = R)
+cocktail <- add_trait(cocktail, beta0 = 10, R = vcov$cs())
 try(
   cocktail <- add_trait(cocktail, beta0 = 10, R = "bad_specification"), 
 )
@@ -134,6 +132,20 @@ str(genotype(cocktail))
 str(metadata(cocktail))
 ```
 
+## Test helper functions
+
+```{r}
+# Feature maps
+feature_map$ident()(cocktail) %>% .[1:3,1:3]
+feature_map$vanraden()(cocktail) %>% .[1:3,1:3]
+
+# vcov
+vcov$homo()(N) %>% .[1:3,1:3]
+vcov$hetero()(N)  %>% .[1:3,1:3]
+vcov$cs()(N)  %>% .[1:3,1:3]
+```
+
+
 ## The Pipeline
 
 ```{r}
@@ -153,4 +165,8 @@ cocktail
 
 ```{r}
 # update function
+# regenerate function
+# add_random
+# add_fixed
+# add_interaction
 ```

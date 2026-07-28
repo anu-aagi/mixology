@@ -192,7 +192,7 @@ snp_simulation <- function(N = 300,
       meta    = list(
         Membership =  data.frame(Membership1 = z_f, Membership2 = z_f_partner),
         Environment = NULL,
-        Misc = NULL
+        misc = NULL
       ),
       added = NULL,
       samples = rownames(X),

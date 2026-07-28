@@ -2,7 +2,7 @@
 #' @export
 add_trait <- function(obj,
                       beta0 = 0,
-                      R = 1,
+                      R = vcov$homo(),
                       scale = FALSE,
                       seed = obj$seed) {
   # Save call
@@ -18,24 +18,19 @@ add_trait <- function(obj,
   N <- obj$data$N
 
   # Noise component
-  if (is.vector(R)) {
-    if (any(length(R) %in% c(1, N)) && is.numeric(R)) {
-      eps <- rnorm(N, 0, sqrt(R))
-      R <- Matrix::Diagonal(n = N, x = R)
-    } else {
-      stop("Invalid `R` specification: A vector deteced, but not a numeric of length N = ", N)
-    }
-  } else {
-    m <- .check.vcov.matrix(N, R)
-    if (!is.null(m)) {
-      stop("Invalid `R` specification: ", m)
-    }
-
-    R <- Matrix::Matrix(R)
-    L <- t(chol(R))
-    u <- rnorm(N, 0, 1)
-    eps <- as.numeric(L %*% u)
+  # Variance component
+  if (is.function(R)) {
+    R <- R(N)
   }
+  m <- .check.vcov.matrix(N, R)
+  if (!is.null(m)) {
+    stop("Invalid `R` specification: ", m)
+  }
+  R <- Matrix::Matrix(R)
+  R <- Matrix::Matrix(R)
+  L <- t(chol(R))
+  u <- rnorm(N, 0, 1)
+  eps <- as.numeric(L %*% u)
 
   trRC <- sum(diag(R) - rowSums(R) / N)
   expected_var <- trRC / (N - 1)
@@ -180,7 +175,7 @@ add_additive <- function(obj,
 #' @export
 add_polygenic <- function(obj,
                           W = feature_map$vanraden(),
-                          G_Polygenic = 1,
+                          G_Polygenic = vcov$homo(),
                           r = NULL,
                           scale = FALSE,
                           seed = NULL) {
@@ -218,19 +213,14 @@ add_polygenic <- function(obj,
   M <- ncol(W)
 
   # Variance component
-  if (is.vector(G_Polygenic)) {
-    if (any(length(G_Polygenic) %in% c(1, M)) && is.numeric(G_Polygenic)) {
-      G_Polygenic <- Matrix::Diagonal(n = M, x = G_Polygenic)
-    } else {
-      stop("Invalid `G_Polygenic` specification: A vector deteced, but not a numeric of length N = ", N)
-    }
-  } else {
-    m <- .check.vcov.matrix(M, G_Polygenic)
-    if (!is.null(m)) {
-      stop("Invalid `G_Polygenic` specification: ", m)
-    }
-    G_Polygenic <- Matrix::Matrix(G_Polygenic)
+  if (is.function(G_Polygenic)) {
+    G_Polygenic <- G_Polygenic(M)
   }
+  m <- .check.vcov.matrix(M, G_Polygenic)
+  if (!is.null(m)) {
+    stop("Invalid `G_Polygenic` specification: ", m)
+  }
+  G_Polygenic <- Matrix::Matrix(G_Polygenic)
 
   WG <- W %*% G_Polygenic
   trWVWTC <- sum(rowSums(WG * W) - WG %*% colSums(W) / N)

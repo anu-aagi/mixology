@@ -4,7 +4,7 @@
 \alias{add_trait}
 \title{Add a trait}
 \usage{
-add_trait(obj, beta0 = 0, R = 1, scale = FALSE, seed = obj$seed)
+add_trait(obj, beta0 = 0, R = vcov$homo(), scale = FALSE, seed = obj$seed)
 }
 \description{
 Add a trait

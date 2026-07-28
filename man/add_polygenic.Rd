@@ -7,7 +7,7 @@
 add_polygenic(
   obj,
   W = feature_map$vanraden(),
-  G_Polygenic = 1,
+  G_Polygenic = vcov$homo(),
   r = NULL,
   scale = FALSE,
   seed = NULL
